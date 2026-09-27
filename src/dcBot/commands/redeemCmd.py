@@ -18,12 +18,14 @@ def register_redeem_command(
     )
     @app_commands.describe(
         gift_code="The gift code to redeem",
-        player_id="Optional: A specific player ID to redeem the code for.",
+        player_id="Optional: A specific player ID",
+        kingdom_id="Kingdom ID for the specified player",
     )
     async def redeem(
         interaction: discord.Interaction,
         gift_code: str,
         player_id: Optional[str] = None,
+        kingdom_id: Optional[str] = None,
     ):
         permission_error = check_permissions(interaction, bot_data)
         if permission_error:
@@ -38,11 +40,23 @@ def register_redeem_command(
 
             if player_id:
                 target_player = next(
-                    (p for p in all_players if p.get("player_id") == player_id), None
+                    (p for p in all_players if p.get("player_id") == player_id),
+                    None
                 )
+
                 if not target_player:
-                    # Player not found, create a temporary one for one-off redemption
-                    target_player = {"player_id": player_id, "player_nick": "N/A"}
+                    if not kingdom_id:
+                        await interaction.followup.send(
+                            "❌ Kingdom ID is required for an unregistered player."
+                        )
+                        return
+
+                    target_player = {
+                        "player_id": player_id,
+                        "kingdom_id": kingdom_id,
+                        "player_nick": "N/A"
+                    }
+
                 players_to_redeem = [target_player]
 
             results = await redeem_giftcode_for_all_players(players_to_redeem, gift_code)

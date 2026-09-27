@@ -2,9 +2,9 @@ from typing import Any, List, Dict
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeoutError
 from config.config import TIMEOUT_MS
 
-async def perform_giftcode_redeem(player_id: str, gift_code: str, page: Any) -> Dict[str, Any]:
+async def perform_giftcode_redeem(player_id: str, kingdom_id: str, gift_code: str, page: Any) -> Dict[str, Any]:
     await page.fill("input[placeholder='Player ID']", player_id)
-    await page.click("div.btn.login_btn")
+    await page.fill("input[placeholder='Kingdom']", kingdom_id)
     await page.wait_for_timeout(TIMEOUT_MS)
 
     # Handle failed login with busy server message
@@ -20,7 +20,7 @@ async def perform_giftcode_redeem(player_id: str, gift_code: str, page: Any) -> 
     except (PlaywrightTimeoutError, TimeoutError):
         pass
 
-    player_nick = await page.inner_text("p.name")
+    
     print("Trying to redeem for player:", player_nick)
 
     await page.fill("input[placeholder='Enter Gift Code']", gift_code)
@@ -57,10 +57,23 @@ async def redeem_giftcode_for_all_players(players: List[Dict[str, str]], gift_co
         await page.goto("https://ks-giftcode.centurygame.com/")
 
         for player in players:
-            player_id = player.get("player_id", "")
+            
             stored_nick = player.get("player_nick")
+            kingdom_id = player.get("kingdom_id", "")
 
-            result = await perform_giftcode_redeem(player_id, gift_code, page)
+            if not kingdom_id:
+                results.append({
+                    "player_id": player_id,
+                    "stored_player_nick": stored_nick,
+                    "success": False,
+                    "result": {
+                        "player_nick": stored_nick or "N/A",
+                        "message": "Missing Kingdom ID."
+                    }
+                })
+                continue
+
+            result = await perform_giftcode_redeem(player_id, kingdom_id, gift_code, page)
             page_nick = result.get("player_nick")
             result_message = result.get("message")
 
