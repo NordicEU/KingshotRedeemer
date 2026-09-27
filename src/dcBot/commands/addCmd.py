@@ -11,8 +11,8 @@ def register_add_command(
     save_bot_data: Callable[[Dict[str, Any]], None],
 ):
     @tree.command(name="add", description="Add a new player by ID")
-    @app_commands.describe(player_id="The player ID to add")
-    async def add_player(interaction: discord.Interaction, player_id: str):
+    @app_commands.describe(player_id="The player ID to add", kingdom_id="The kingdom ID for the player")
+    async def add_player(interaction: discord.Interaction, player_id: str, kingdom_id: str = None):
         
         permission_error = check_permissions(interaction, bot_data)
         if permission_error:
@@ -28,12 +28,15 @@ def register_add_command(
                 (p for p in players if p.get("player_id") == player_id), None
             )
             if existing:
+                existing["kingdom_id"] = kingdom_id
+                save_bot_data(bot_data)
+
                 await interaction.followup.send(
-                    f"❌ Player with ID `{player_id}` already exists as `{existing.get('player_nick', 'N/A')}`."
+                    f"✅ Updated `{player_id}` to Kingdom `{kingdom_id}`."
                 )
                 return
 
-            new_player = {"player_id": player_id, "player_nick": f"Player {player_id}"}
+            new_player = {"player_id": player_id, "kingdom_id": kingdom_id, "player_nick": f"Player {player_id}"}
             players.append(new_player)
             bot_data["players"] = players
             save_bot_data(bot_data)

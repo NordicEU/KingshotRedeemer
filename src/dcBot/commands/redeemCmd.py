@@ -61,7 +61,7 @@ def register_redeem_command(
 
             results = await redeem_giftcode_for_all_players(players_to_redeem, gift_code)
             failed = 0
-            updated = False
+            
 
             failed_players = []
             for item in results:
@@ -71,41 +71,25 @@ def register_redeem_command(
                     failed_players.append(f"❌ Invalid gift code.")
                     break
 
-                # Keep player nicknames synced for readability
-                page_nick = item.get("page_player_nick")
-                redeemed_player_id = item.get("player_id")
-
-                # Find the player in the main list to update their nick
-                player_to_update = next(
-                    (p for p in all_players if p.get("player_id") == redeemed_player_id),
-                    None,
-                )
-
-                if player_to_update and page_nick and player_to_update.get("player_nick") != page_nick:
-                    player_to_update["player_nick"] = page_nick
-                    updated = True
-
+                
                 success = item.get("success")
                 if success:
                     continue
 
                 result = item.get("result", {})
                 res_player_id = item.get("player_id", "Unknown")
-                res_player_nick = result.get("player_nick", "N/A")
+                res_kingdom = item.get("kingdom_id", "Unknown")
                 message = result.get("message", "No message")
                 failed += 1
 
-                failed_players.append(f"❌ `{res_player_id}` ({res_player_nick}): {message}")
+                failed_players.append(f"❌ `{res_player_id}` K({res_kingdom}): {message}")
 
             response_message = (
                 f"🎁 **Redeem Results for `{gift_code}`**\n"
                 f"🚀 `{len(results) - failed}/{len(results)}` succeeded!\n\n"
             )
             response_message += "\n".join(failed_players)
-            if updated:
-                bot_data["players"] = all_players
-                save_bot_data(bot_data)
-                response_message += "\n\n💾 Updated player names from Kingshot page"
+            
 
             if len(response_message) > 1900:
                 response_message = response_message[:1900] + "\n…(truncated)"

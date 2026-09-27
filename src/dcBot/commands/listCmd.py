@@ -32,9 +32,10 @@ class PlayerListView(discord.ui.View):
         for player in page_players:
             player_id = player.get("player_id", "Unknown")
             player_nick = player.get("player_nick", "N/A")
+            kingdom_id = player.get("kingdom_id", "Not set")
             embed.add_field(
                 name=f"{player_nick}",
-                value=f"ID: `{player_id}`",
+                value=f"ID: `{player_id}`\nKingdom: `{kingdom_id}`",
                 inline=False,
             )
 

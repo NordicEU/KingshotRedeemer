@@ -47,9 +47,11 @@ def register_find_command(
             for p in matches[:10]:
                 player_id = p.get("player_id", "Unknown")
                 player_nick = p.get("player_nick", "N/A")
+                kingdom_id = p.get("kingdom_id", "Not set")
+
                 embed.add_field(
                     name=player_nick,
-                    value=f"ID: `{player_id}`",
+                    value=f"ID: `{player_id}`\nKingdom: `{kingdom_id}`",
                     inline=False,
                 )
 
