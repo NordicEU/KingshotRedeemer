@@ -12,6 +12,13 @@ from dcBot.commands.helpCmd import register_help_command  # noqa: E402
 from dcBot.commands.setupCmd import register_setup_command
 from dcBot.data_handler import load_bot_data, save_bot_data
 
+from dcBot.update_checker import UpdateChecker
+client.update_checker = UpdateChecker(
+    client,
+    bot_data,
+    save_bot_data_with_players
+)
+
 
 
 def load_bot_data_with_players():
